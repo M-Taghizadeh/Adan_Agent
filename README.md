@@ -83,8 +83,6 @@
 
 ### 1. Coordinator graph (LangGraph)
 
-### 1. Coordinator graph (LangGraph)
-
 ```mermaid
 flowchart TD
     S([start]) --> R{router}

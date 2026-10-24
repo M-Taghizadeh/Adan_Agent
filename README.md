@@ -26,8 +26,7 @@
 - [Configuration](#configuration)
 - [User interface](#user-interface)
 - [API reference](#api-reference)
-- [**Example requests**](#example-requests)
-- [Demo scenarios](#demo-scenarios)
+- [**Example requests**](#example-scenarios)
 - [SQL safety](#sql-safety)
 - [RAG scoring](#rag-scoring)
 - [Tests](#tests)
@@ -300,47 +299,7 @@ Status codes: `400` empty question, `503` the LLM is unavailable or not configur
 
 ---
 
-## Example requests
-
-```bash
-# Health
-curl http://localhost:8000/health
-
-# RAG
-curl -s http://localhost:8000/ask -H "Content-Type: application/json" \
-  -d '{"question":"How many days do customers have to return unused products?","force_route":"rag"}'
-
-# NL2SQL: aggregation
-curl -s http://localhost:8000/ask -H "Content-Type: application/json" \
-  -d '{"question":"What is the total revenue from all sales?","force_route":"sql"}'
-
-# NL2SQL: filter + join
-curl -s http://localhost:8000/ask -H "Content-Type: application/json" \
-  -d '{"question":"Show total revenue by category for sales in Tehran","force_route":"sql"}'
-
-# Hybrid: SQL, then calculator
-curl -s http://localhost:8000/ask -H "Content-Type: application/json" \
-  -d '{"question":"What is the total sales revenue and calculate 15 percent of that amount?","force_route":"hybrid"}'
-
-# Hybrid, multi-query: two SQL calls, then a percent-change calculation
-curl -s http://localhost:8000/ask -H "Content-Type: application/json" \
-  -d '{"question":"How much more percent revenue did Tehran make than Isfahan?","force_route":"hybrid"}'
-
-# Out-of-scope document question (should refuse to invent)
-curl -s http://localhost:8000/ask -H "Content-Type: application/json" \
-  -d '{"question":"What is the CEO private phone number?","force_route":"rag"}'
-
-# Dangerous SQL (blocked, no LLM involved)
-curl -s -X POST "http://localhost:8000/sql/validate?sql=DROP%20TABLE%20products"
-```
-
-On Windows PowerShell, use the UI or Swagger at `/docs` instead of these `curl` lines (quoting differs).
-
-More examples: [`examples/sample_requests.md`](examples/sample_requests.md) · Illustrative outputs: [`examples/sample_outputs.json`](examples/sample_outputs.json)
-
----
-
-## Demo scenarios
+## Example scenarios
 
 | # | Type | Sample question | Expected behavior |
 | --- | --- | --- | --- |
@@ -353,6 +312,13 @@ More examples: [`examples/sample_requests.md`](examples/sample_requests.md) · I
 | 7 | Hybrid | Tehran vs Isfahan revenue, percent difference? | 2x `query_database`, then `calculator` (`pct_change`) |
 | 8 | SQL safety | `DROP TABLE products` | Rejected by the validator |
 | 9 | SQL self-repair | Query with a wrong column | Error returned to the LLM, corrected query (see `tests/test_tool_agent.py`) |
+| 10 | Hybrid, 2 queries | درآمد ژانویه و فوریه 2025 را مقایسه کن و درصد تغییر فوریه نسبت به ژانویه را بگو | 2x `query_database`, then `calculator` (`pct_change`). Jan 2,359.45, Feb 1,308.70, change -44.53% |
+| 11 | Hybrid, multi-step | سهم هر شهر (Tehran, Isfahan, Shiraz, Mashhad) از کل درآمد چند درصد است؟ | Several `query_database` calls, then one `calculator` (`pct`) per region. Tehran 2,732.92 (69.29%), Isfahan 525.73 (13.33%), Shiraz 427.50 (10.84%), Mashhad 258.00 (6.54%), total 3,944.15 |
+| 12 | Hybrid, JOIN | درآمد دسته Electronics چند درصد کل درآمد است؟ | `query_database` with JOIN on `products`, then `calculator` (`pct`). 2,596.40 of 3,944.15 = 65.83% |
+| 13 | Hybrid, filter + 2 queries | درآمد تهران در ژانویه و مارس 2025 چقدر بود و چند درصد کاهش داشت؟ | 2x `query_database` (region + month filters), then `calculator` (`pct_change`). Jan 2,006.97, Mar 276.00, change -86.25% |
+| 14 | Hybrid, empty result | درآمد منطقه Tabriz را حساب کن و نسبتش به درآمد Tehran را بگو | Query returns 0 rows, agent re-checks filters and retries once, then states that no data exists for Tabriz. Must not invent a number |
+| 15 | Hybrid, English | How much more percent revenue did Tehran make than Isfahan? | 2x `query_database`, then `calculator` (`pct_change`). Tehran 2,732.92, Isfahan 525.73, Tehran is 419.83% higher (about 5.2x). Answer in English |
+| 16 | Hybrid, avg + percent | میانگین درآمد ماهانه سه ماه اول 2025 چقدر است و درآمد فوریه چند درصد بالاتر یا پایین‌تر از این میانگین است؟ | `query_database` for Jan/Feb/Mar, then `calculator` (`avg`, `pct_change`). Jan 2,359.45, Feb 1,308.70, Mar 276.00, average 1,314.72, Feb is -0.46% vs average |
 
 ### Sample data
 

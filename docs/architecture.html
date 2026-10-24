@@ -297,16 +297,16 @@
 <body>
   <div class="wrap">
     <header>
-      <span class="kicker">راهنمای یادگیری کد</span>
-      <h1>Adan RAG را از کجا و به چه ترتیبی بخوانی؟</h1>
+      <span class="kicker">راهنمای کد</span>
+      <h1>سند جامع برای Code Review</h1>
       <p>
-        این صفحه مسیر یادگیری پروژه را قدم‌به‌قدم نشان می‌دهد:
-        هر فایل چه کار می‌کند، چرا آن را الان بخوانی، و جریان سوال تا پاسخ چگونه است.
+        این صفحه مسیر کد ریویو پروژه را نشان می‌دهد:
+        هر فایل چه کار می‌کند و جریان سوال تا پاسخ چگونه است.
       </p>
     </header>
 
     <nav class="toc" aria-label="فهرست">
-      <strong>فهرست — ترتیب پیشنهادی مطالعه</strong>
+      <strong>فهرست</strong>
       <ol>
         <li><a href="#big-picture">تصویر کلی سیستم</a></li>
         <li><a href="#start-here">از کجا شروع کنی (نقشهٔ مطالعه)</a></li>
@@ -326,7 +326,7 @@
     <section id="big-picture">
       <h2>۰. تصویر کلی — سیستم چه می‌کند؟</h2>
       <p>
-        دستیار داخلی فروشگاه فرضی <strong>Adan Retail</strong> است. کاربر یک سوال می‌پرسد؛
+        این سامانه، دستیار داخلی فروشگاه فرضی <strong>Adan Shop</strong> است. کاربر یک سوال می‌پرسد؛
         سیستم تشخیص می‌دهد سوال مربوط به <span class="badge badge-rag">اسناد PDF</span> است،
         <span class="badge badge-sql">دیتابیس فروش</span>، یا
         <span class="badge badge-hybrid">هر دو + محاسبه</span>،
@@ -365,9 +365,9 @@ flowchart TB
 
       <div class="card tip">
         <strong>مدل ذهنی ساده:</strong>
-        سوال وارد <code>/ask</code> می‌شود →
-        <code>coordinator</code> مسیر را انتخاب می‌کند →
-        یکی از سه متخصص کار می‌کند →
+        سوال وارد <code>/ask</code> می‌شود ←
+        <code>coordinator</code> مسیر را انتخاب می‌کند ←
+        یکی از سه متخصص کار می‌کند ←
         پاسخ + trace برمی‌گردد.
         هر درخواست مستقل است؛ حافظهٔ مکالمه ندارد.
       </div>
@@ -375,11 +375,7 @@ flowchart TB
 
     <!-- Start here map -->
     <section id="start-here">
-      <h2>از کجا شروع کنی؟</h2>
-      <p class="muted">
-        ترتیب زیر از «بیرون به داخل» است: اول بفهمی سیستم چیست، بعد قرارداد ورودی/خروجی،
-        بعد دروازهٔ HTTP، بعد مغز تصمیم‌گیری، و در آخر جزئیات RAG و SQL.
-      </p>
+      <h2>هر فایل چکار میکند؟</h2>
 
       <ol class="steps">
         <li>
@@ -446,17 +442,13 @@ flowchart TB
         فایل: <code>README.md</code>
       </p>
       <p>
-        اینجا می‌فهمی پروژه سه قابلیت دارد:
+        پروژه سه قابلیت دارد:
       </p>
       <ul class="plain">
         <li><strong>RAG</strong> — پاسخ از روی PDFها (سیاست بازگشت، handbook، کاتالوگ)</li>
         <li><strong>NL2SQL</strong> — سوال فارسی/انگلیسی → SQL خواندنی روی SQLite</li>
         <li><strong>Agentic flow</strong> — LangGraph مسیر rag / sql / hybrid را انتخاب می‌کند</li>
       </ul>
-      <p class="muted">
-        همچنین نحوهٔ اجرا با Docker یا لوکال، و چند نمونه <code>curl</code> برای تست را می‌بینی.
-        هنوز وارد جزئیات کد نشو؛ فقط تصویر کلی را بگیر.
-      </p>
     </section>
 
     <!-- Step 2 -->
@@ -511,10 +503,6 @@ flowchart TB
           </tr>
         </tbody>
       </table>
-      <div class="card tip">
-        قبل از خواندن منطق Agent، این فایل را خوب بفهم.
-        هر چیزی که بعداً در کد می‌بینی، در نهایت به یکی از این فیلدها تبدیل می‌شود.
-      </div>
     </section>
 
     <!-- Step 3 -->
@@ -539,10 +527,6 @@ flowchart TB
           endpoint کمکی: <code>POST /sql/validate</code> — نشان می‌دهد SQL خطرناک (مثل DROP) بدون دخالت LLM رد می‌شود.
         </li>
       </ol>
-      <p class="muted">
-        خود <code>main.py</code> منطق هوشمند ندارد؛ فقط HTTP را به coordinator وصل می‌کند.
-        اگر این فایل را فهمیدی، مسیر ورود سوال را بلدی.
-      </p>
     </section>
 
     <!-- Step 4 -->
@@ -550,7 +534,6 @@ flowchart TB
       <h2><span class="path-label">قدم ۴</span> هماهنگ‌کننده — قلب سیستم</h2>
       <p>
         فایل: <code>app/agents/coordinator.py</code>
-        — بعد از main، همین را بخوان؛ بقیهٔ پروژه دور این فایل می‌چرخد.
       </p>
 
       <h3>۴‑۱ — <code>AgentState</code></h3>
@@ -631,9 +614,6 @@ flowchart LR
     <!-- Step 5 -->
     <section id="step-5">
       <h2><span class="path-label">قدم ۵</span> مسیر RAG — از PDF تا پاسخ</h2>
-      <p>
-        ترتیب خواندن داخل این لایه مهم است؛ از آماده‌سازی داده به سمت پاسخ برو:
-      </p>
 
       <ol class="steps">
         <li>
@@ -794,7 +774,6 @@ flowchart TD
       <h3>تست‌ها — <code>tests/</code></h3>
       <p>
         بخش‌هایی مثل ماشین‌حساب، preprocess، router (با LLM شبیه‌سازی‌شده)، ایمنی SQL (چند لایه) و حلقهٔ tool calling (با LLM شبیه‌سازی‌شده) را بدون نیاز به کلید API پوشش می‌دهند.
-        بعد از فهم منطق، تست‌ها بهترین تأیید فهم هستند.
       </p>
 
       <h3>داده — <code>data/</code></h3>
@@ -846,23 +825,7 @@ sequenceDiagram
   F-->>U: JSON
         </pre>
       </div>
-
-      <div class="card tip">
-        <strong>اگر فقط ۳۰ دقیقه وقت داری:</strong>
-        بخوان به ترتیب
-        <code>schemas.py</code> →
-        <code>main.py</code> →
-        <code>coordinator.py</code>
-        (به‌خصوص <code>route_node</code> و <code>run_assistant</code>).
-        با همین سه فایل ۸۰٪ معماری را می‌فهمی؛ بعد سراغ RAG یا SQL برو.
-      </div>
     </section>
-
-    <footer>
-      راهنمای یادگیری کد Adan Retail Assistant —
-      فایل: <span class="mono">docs/architecture.html</span> —
-      فونت: وزیرمتن (Vazirmatn)
-    </footer>
   </div>
 
   <script>

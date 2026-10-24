@@ -36,6 +36,8 @@
 
 ---
 
+![demo](docs/preview.png)
+
 ## Overview
 
 <div dir="rtl">

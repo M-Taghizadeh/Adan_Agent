@@ -106,7 +106,7 @@ flowchart TD
 
     SQD --> NL[nl2sql]
     HQD --> NL
-    NL <--> DB[(SQLite read-only)]
+    NL <--> DB[(Database Guard)]
 
     RA --> E([end])
     RN --> E

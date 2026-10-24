@@ -83,15 +83,37 @@
 
 ### 1. Coordinator graph (LangGraph)
 
+### 1. Coordinator graph (LangGraph)
+
 ```mermaid
 flowchart TD
-    Q(["POST /ask<br/>run_assistant(question, force_route)"]) --> R{"router<br/>route_node"}
-    R -- rag --> RAG["rag_agent<br/>documents + citations"]
-    R -- sql --> SQL["sql_agent<br/>NL2SQL tool loop"]
-    R -- hybrid --> HYB["hybrid_agent<br/>SQL + calculator loop"]
-    RAG --> OUT(["END<br/>builds AskResponse"])
-    SQL --> OUT
-    HYB --> OUT
+    S([start]) --> R{router}
+    R -- rag --> RAG[rag_agent]
+    R -- sql --> SQL[sql_agent]
+    R -- hybrid --> HYB[hybrid_agent]
+
+    RAG --> RF{score ≥ threshold?}
+    RF -- yes --> RA[LLM answer]
+    RF -- no --> RN[fallback reply]
+    RAG <--> FAISS[(Vector DB: FAISS)]
+
+    SQL --> SLLM[LLM]
+    SLLM --> SA[final answer]
+    SLLM <-- "tool call" --> SQD[query_database]
+
+    HYB --> HLLM[LLM]
+    HLLM --> HA[final answer]
+    HLLM <-- "tool call" --> HQD[query_database]
+    HLLM <-. "tool call" .-> CALC[calculator]
+
+    SQD --> NL[nl2sql]
+    HQD --> NL
+    NL <--> DB[(SQLite read-only)]
+
+    RA --> E([end])
+    RN --> E
+    SA --> E
+    HA --> E
 ```
 
 ### 2. How the router decides

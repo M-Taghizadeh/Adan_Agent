@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>راهنمای یادگیری کد — Adan RAG</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link href="https://cdn.jsdelivr.net/gh/rastikerdar/vazirmatn@v33.003/Vazirmatn-font-face.css" rel="stylesheet" type="text/css" />
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a222d;
+      --surface-2: #232d3b;
+      --border: #2e3a4a;
+      --text: #e8eef4;
+      --muted: #9aabbc;
+      --accent: #2dd4bf;
+      --accent-dim: rgba(45, 212, 191, 0.12);
+      --rag: #60a5fa;
+      --sql: #fbbf24;
+      --hybrid: #c084fc;
+      --warn: #fb7185;
+      --step: #34d399;
+      --radius: 12px;
+      --shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Vazirmatn, Tahoma, sans-serif;
+      background:
+        radial-gradient(ellipse 80% 50% at 10% -10%, rgba(45, 212, 191, 0.15), transparent),
+        radial-gradient(ellipse 60% 40% at 90% 0%, rgba(96, 165, 250, 0.1), transparent),
+        var(--bg);
+      color: var(--text);
+      line-height: 1.85;
+      font-size: 15.5px;
+    }
+
+    .wrap {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 2.5rem 1.25rem 4rem;
+    }
+
+    header {
+      margin-bottom: 2.5rem;
+      padding-bottom: 1.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .kicker {
+      display: inline-block;
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+      color: var(--accent);
+      background: var(--accent-dim);
+      padding: 0.25rem 0.7rem;
+      border-radius: 999px;
+      margin-bottom: 0.75rem;
+    }
+
+    h1 {
+      font-size: clamp(1.55rem, 3.5vw, 2.1rem);
+      font-weight: 700;
+      margin: 0 0 0.6rem;
+      line-height: 1.4;
+    }
+
+    header p {
+      margin: 0;
+      color: var(--muted);
+      max-width: 44rem;
+    }
+
+    nav.toc {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.1rem 1.35rem;
+      margin-bottom: 2.5rem;
+      box-shadow: var(--shadow);
+    }
+
+    nav.toc strong {
+      display: block;
+      margin-bottom: 0.5rem;
+      color: var(--accent);
+      font-size: 0.9rem;
+    }
+
+    nav.toc ol {
+      margin: 0;
+      padding-right: 1.25rem;
+      color: var(--muted);
+    }
+
+    nav.toc a {
+      color: var(--text);
+      text-decoration: none;
+      border-bottom: 1px dashed transparent;
+    }
+
+    nav.toc a:hover {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    section {
+      margin-bottom: 2.75rem;
+    }
+
+    h2 {
+      font-size: 1.35rem;
+      margin: 0 0 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--accent);
+      display: inline-block;
+    }
+
+    h3 {
+      font-size: 1.05rem;
+      margin: 1.5rem 0 0.6rem;
+      color: var(--accent);
+    }
+
+    p { margin: 0 0 0.9rem; color: var(--text); }
+
+    .muted { color: var(--muted); }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.4rem;
+      margin: 1rem 0;
+      box-shadow: var(--shadow);
+    }
+
+    .card.tip {
+      border-color: rgba(45, 212, 191, 0.35);
+      background: linear-gradient(135deg, var(--accent-dim), var(--surface));
+    }
+
+    .diagram {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin: 1.1rem 0 1.5rem;
+      overflow-x: auto;
+      direction: ltr;
+      text-align: left;
+    }
+
+    .diagram .mermaid {
+      display: flex;
+      justify-content: center;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+      margin: 1rem 0;
+    }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.65rem 0.85rem;
+      text-align: right;
+      vertical-align: top;
+    }
+
+    th {
+      background: var(--surface-2);
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    tr:nth-child(even) td { background: rgba(255, 255, 255, 0.02); }
+
+    code, .mono {
+      font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+      font-size: 0.86em;
+      direction: ltr;
+      unicode-bidi: embed;
+    }
+
+    code {
+      background: var(--surface-2);
+      padding: 0.12rem 0.4rem;
+      border-radius: 4px;
+      color: #a5f3fc;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.15rem 0.55rem;
+      border-radius: 6px;
+      margin-left: 0.25rem;
+    }
+
+    .badge-rag { background: rgba(96, 165, 250, 0.2); color: var(--rag); }
+    .badge-sql { background: rgba(251, 191, 36, 0.2); color: var(--sql); }
+    .badge-hybrid { background: rgba(192, 132, 252, 0.2); color: var(--hybrid); }
+    .badge-coord { background: var(--accent-dim); color: var(--accent); }
+    .badge-step { background: rgba(52, 211, 153, 0.15); color: var(--step); }
+
+    .steps {
+      list-style: none;
+      padding: 0;
+      margin: 0.75rem 0 0;
+      counter-reset: step;
+    }
+
+    .steps li {
+      position: relative;
+      padding: 0.85rem 1rem 0.85rem 1rem;
+      padding-right: 3rem;
+      margin-bottom: 0.55rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      counter-increment: step;
+    }
+
+    .steps li::before {
+      content: counter(step);
+      position: absolute;
+      right: 0.85rem;
+      top: 0.85rem;
+      width: 1.55rem;
+      height: 1.55rem;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #0f1419;
+      font-weight: 700;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+
+    .file-tree {
+      direction: ltr;
+      text-align: left;
+      font-family: ui-monospace, Consolas, monospace;
+      font-size: 0.82rem;
+      line-height: 1.65;
+      color: #cbd5e1;
+      white-space: pre;
+      overflow-x: auto;
+    }
+
+    .path-label {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--step);
+      background: rgba(52, 211, 153, 0.12);
+      padding: 0.1rem 0.45rem;
+      border-radius: 4px;
+      margin-left: 0.35rem;
+      vertical-align: middle;
+    }
+
+    ul.plain {
+      margin: 0.4rem 0 0.9rem;
+      padding-right: 1.25rem;
+      color: var(--text);
+    }
+
+    ul.plain li { margin-bottom: 0.35rem; }
+
+    footer {
+      margin-top: 3rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    @media (max-width: 640px) {
+      .wrap { padding: 1.5rem 0.85rem 3rem; }
+      table { font-size: 0.8rem; }
+      th, td { padding: 0.45rem 0.5rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <span class="kicker">راهنمای یادگیری کد</span>
+      <h1>Adan RAG را از کجا و به چه ترتیبی بخوانی؟</h1>
+      <p>
+        این صفحه مسیر یادگیری پروژه را قدم‌به‌قدم نشان می‌دهد:
+        هر فایل چه کار می‌کند، چرا آن را الان بخوانی، و جریان سوال تا پاسخ چگونه است.
+      </p>
+    </header>
+
+    <nav class="toc" aria-label="فهرست">
+      <strong>فهرست — ترتیب پیشنهادی مطالعه</strong>
+      <ol>
+        <li><a href="#big-picture">تصویر کلی سیستم</a></li>
+        <li><a href="#start-here">از کجا شروع کنی (نقشهٔ مطالعه)</a></li>
+        <li><a href="#step-1">قدم ۱ — README و هدف پروژه</a></li>
+        <li><a href="#step-2">قدم ۲ — تنظیمات و قرارداد API</a></li>
+        <li><a href="#step-3">قدم ۳ — دروازهٔ FastAPI</a></li>
+        <li><a href="#step-4">قدم ۴ — هماهنگ‌کننده (قلب سیستم)</a></li>
+        <li><a href="#step-5">قدم ۵ — مسیر RAG (اسناد)</a></li>
+        <li><a href="#step-6">قدم ۶ — مسیر SQL (دیتابیس)</a></li>
+        <li><a href="#step-7">قدم ۷ — ماشین‌حساب و Hybrid</a></li>
+        <li><a href="#step-8">قدم ۸ — اسکریپت‌ها، UI و تست‌ها</a></li>
+        <li><a href="#runtime">جریان اجرا در زمان واقعی</a></li>
+      </ol>
+    </nav>
+
+    <!-- Big picture -->
+    <section id="big-picture">
+      <h2>۰. تصویر کلی — سیستم چه می‌کند؟</h2>
+      <p>
+        دستیار داخلی فروشگاه فرضی <strong>Adan Retail</strong> است. کاربر یک سوال می‌پرسد؛
+        سیستم تشخیص می‌دهد سوال مربوط به <span class="badge badge-rag">اسناد PDF</span> است،
+        <span class="badge badge-sql">دیتابیس فروش</span>، یا
+        <span class="badge badge-hybrid">هر دو + محاسبه</span>،
+        سپس مسیر درست را اجرا می‌کند و پاسخ می‌دهد.
+      </p>
+
+      <div class="diagram">
+        <pre class="mermaid">
+flowchart TB
+  User(["کاربر"])
+  UI["Gradio اختیاری<br/>ui/gradio_app.py"]
+  API["FastAPI<br/>app/main.py<br/>POST /ask"]
+  Coord["LangGraph<br/>coordinator.py"]
+
+  User --> UI
+  User --> API
+  UI -->|"HTTP"| API
+  API -->|"run_assistant()"| Coord
+
+  Coord --> R{Router}
+  R -->|rag| RAG["اسناد + FAISS"]
+  R -->|sql| SQL["Tool calling: NL2SQL + SQLite"]
+  R -->|hybrid| HYB["Tool calling: SQL + Calculator"]
+
+  RAG --> OUT["AskResponse"]
+  SQL --> OUT
+  HYB --> OUT
+  OUT --> API
+
+  style R fill:#134e4a,stroke:#2dd4bf,color:#e8eef4
+  style RAG fill:#1e3a5f,stroke:#60a5fa,color:#e8eef4
+  style SQL fill:#422006,stroke:#fbbf24,color:#e8eef4
+  style HYB fill:#3b0764,stroke:#c084fc,color:#e8eef4
+        </pre>
+      </div>
+
+      <div class="card tip">
+        <strong>مدل ذهنی ساده:</strong>
+        سوال وارد <code>/ask</code> می‌شود →
+        <code>coordinator</code> مسیر را انتخاب می‌کند →
+        یکی از سه متخصص کار می‌کند →
+        پاسخ + trace برمی‌گردد.
+        هر درخواست مستقل است؛ حافظهٔ مکالمه ندارد.
+      </div>
+    </section>
+
+    <!-- Start here map -->
+    <section id="start-here">
+      <h2>از کجا شروع کنی؟</h2>
+      <p class="muted">
+        ترتیب زیر از «بیرون به داخل» است: اول بفهمی سیستم چیست، بعد قرارداد ورودی/خروجی،
+        بعد دروازهٔ HTTP، بعد مغز تصمیم‌گیری، و در آخر جزئیات RAG و SQL.
+      </p>
+
+      <ol class="steps">
+        <li>
+          <code>README.md</code>
+          — هدف پروژه و نحوهٔ اجرا
+        </li>
+        <li>
+          <code>app/config.py</code> + <code>.env.example</code>
+          — مسیرها و کلیدها
+        </li>
+        <li>
+          <code>app/models/schemas.py</code>
+          — شکل درخواست و پاسخ
+        </li>
+        <li>
+          <code>app/main.py</code>
+          — API و استارتاپ
+        </li>
+        <li>
+          <code>app/agents/coordinator.py</code>
+          — مهم‌ترین فایل؛ Router و گراف
+        </li>
+        <li>
+          RAG: <code>preprocess → ingest → retriever → rag_agent</code>
+        </li>
+        <li>
+          SQL: <code>db → nl2sql → sql_agent</code>
+        </li>
+        <li>
+          <code>app/tools/calculator.py</code>
+          — محاسبهٔ امن در مسیر hybrid
+        </li>
+        <li>
+          <code>scripts/</code> و <code>ui/gradio_app.py</code> و <code>tests/</code>
+        </li>
+      </ol>
+
+      <div class="card">
+        <pre class="file-tree">Adan_RAG/
+├── README.md                     ← شروع مطالعه
+├── .env.example                  ← متغیرهای محیط
+├── app/
+│   ├── config.py                 ← تنظیمات
+│   ├── models/schemas.py         ← قرارداد API
+│   ├── main.py                   ← FastAPI
+│   ├── agents/
+│   │   ├── coordinator.py        ← ★ قلب سیستم
+│   │   ├── rag_agent.py
+│   │   └── sql_agent.py
+│   ├── rag/                      ← pipeline اسناد
+│   ├── sql/                      ← NL2SQL + SQLite
+│   └── tools/calculator.py
+├── scripts/                      ← ساخت PDF، DB، ایندکس
+├── ui/gradio_app.py
+├── data/                         ← documents, db, faiss_index
+└── tests/</pre>
+      </div>
+    </section>
+
+    <!-- Step 1 -->
+    <section id="step-1">
+      <h2><span class="path-label">قدم ۱</span> README و هدف پروژه</h2>
+      <p>
+        فایل: <code>README.md</code>
+      </p>
+      <p>
+        اینجا می‌فهمی پروژه سه قابلیت دارد:
+      </p>
+      <ul class="plain">
+        <li><strong>RAG</strong> — پاسخ از روی PDFها (سیاست بازگشت، handbook، کاتالوگ)</li>
+        <li><strong>NL2SQL</strong> — سوال فارسی/انگلیسی → SQL خواندنی روی SQLite</li>
+        <li><strong>Agentic flow</strong> — LangGraph مسیر rag / sql / hybrid را انتخاب می‌کند</li>
+      </ul>
+      <p class="muted">
+        همچنین نحوهٔ اجرا با Docker یا لوکال، و چند نمونه <code>curl</code> برای تست را می‌بینی.
+        هنوز وارد جزئیات کد نشو؛ فقط تصویر کلی را بگیر.
+      </p>
+    </section>
+
+    <!-- Step 2 -->
+    <section id="step-2">
+      <h2><span class="path-label">قدم ۲</span> تنظیمات و قرارداد API</h2>
+
+      <h3>۲‑۱ — <code>app/config.py</code></h3>
+      <p>
+        کلاس <code>Settings</code> (با pydantic-settings) همهٔ تنظیمات را از محیط/.env می‌خواند:
+        کلید OpenAI، مدل LLM، مدل Embedding محلی، مسیر پوشهٔ اسناد، مسیر FAISS، مسیر دیتابیس،
+        و پارامترهای RAG مثل <code>rag_top_k</code> و <code>rag_min_score</code>.
+      </p>
+      <p>
+        تابع <code>get_settings()</code> با کش (<code>lru_cache</code>) یک بار تنظیمات را می‌سازد
+        تا در همهٔ ماژول‌ها یکسان باشد.
+      </p>
+
+      <h3>۲‑۲ — <code>.env.example</code></h3>
+      <p>
+        الگوی متغیرها: <code>OPENAI_API_KEY</code> برای Router و تولید پاسخ لازم است؛
+        Embedding محلی است و به کلید نیاز ندارد.
+      </p>
+
+      <h3>۲‑۳ — <code>app/models/schemas.py</code></h3>
+      <p>
+        قرارداد ورودی/خروجی با Pydantic:
+      </p>
+      <table>
+        <thead>
+          <tr><th>مدل</th><th>نقش</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>AskRequest</code></td>
+            <td><code>question</code> + اختیاری <code>force_route</code> (auto / rag / sql / hybrid)</td>
+          </tr>
+          <tr>
+            <td><code>AskResponse</code></td>
+            <td>پاسخ نهایی: answer، route، sources، sql، calculator، trace، …</td>
+          </tr>
+          <tr>
+            <td><code>SourceCitation</code></td>
+            <td>استناد به تکهٔ سند در مسیر RAG</td>
+          </tr>
+          <tr>
+            <td><code>TraceStep</code></td>
+            <td>یک گام از ردپا برای دیباگ (کدام agent چه کرد)</td>
+          </tr>
+          <tr>
+            <td><code>HealthResponse</code></td>
+            <td>وضعیت سلامت API، DB و ایندکس</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="card tip">
+        قبل از خواندن منطق Agent، این فایل را خوب بفهم.
+        هر چیزی که بعداً در کد می‌بینی، در نهایت به یکی از این فیلدها تبدیل می‌شود.
+      </div>
+    </section>
+
+    <!-- Step 3 -->
+    <section id="step-3">
+      <h2><span class="path-label">قدم ۳</span> دروازهٔ FastAPI — <code>app/main.py</code></h2>
+      <p>
+        نقطهٔ ورود برنامه. وقتی سرور بالا می‌آید:
+      </p>
+      <ol class="steps">
+        <li>
+          <code>lifespan</code> اجرا می‌شود: اول <code>ensure_database()</code> دیتابیس را آماده می‌کند،
+          بعد <code>ensure_rag_ready()</code> ایندکس FAISS را لود یا می‌سازد.
+        </li>
+        <li>
+          <code>GET /health</code> — وضعیت DB، RAG و کلید LLM را گزارش می‌دهد.
+        </li>
+        <li>
+          <code>POST /ask</code> — سوال را می‌گیرد و <code>run_assistant(...)</code> را صدا می‌زند.
+          این مهم‌ترین endpoint است.
+        </li>
+        <li>
+          endpoint کمکی: <code>POST /sql/validate</code> — نشان می‌دهد SQL خطرناک (مثل DROP) بدون دخالت LLM رد می‌شود.
+        </li>
+      </ol>
+      <p class="muted">
+        خود <code>main.py</code> منطق هوشمند ندارد؛ فقط HTTP را به coordinator وصل می‌کند.
+        اگر این فایل را فهمیدی، مسیر ورود سوال را بلدی.
+      </p>
+    </section>
+
+    <!-- Step 4 -->
+    <section id="step-4">
+      <h2><span class="path-label">قدم ۴</span> هماهنگ‌کننده — قلب سیستم</h2>
+      <p>
+        فایل: <code>app/agents/coordinator.py</code>
+        — بعد از main، همین را بخوان؛ بقیهٔ پروژه دور این فایل می‌چرخد.
+      </p>
+
+      <h3>۴‑۱ — <code>AgentState</code></h3>
+      <p>
+        وضعیت مشترک گراف: سوال، مسیر انتخاب‌شده، خروجی RAG/SQL/calculator،
+        پاسخ نهایی، منابع، و <code>trace</code>.
+      </p>
+
+      <h3>۴‑۲ — نود Router (<code>route_node</code>)</h3>
+      <div class="diagram">
+        <pre class="mermaid">
+flowchart TD
+  A[ورود سوال] --> B{force_route<br/>اجباری؟}
+  B -->|بله| C[همان مسیر]
+  B -->|auto| F["LLM Router<br/>rag | sql | hybrid"]
+  F -->|خطا یا بدون کلید| X["RuntimeError → HTTP 503"]
+  C --> G[state.route]
+  F --> G
+  G --> H[نود تخصصی]
+
+  style F fill:#134e4a,stroke:#2dd4bf,color:#fff
+  style X fill:#232d3b,stroke:#9aabbc,color:#fff
+        </pre>
+      </div>
+      <ul class="plain">
+        <li>اگر UI مسیر را اجبار کند → همان مسیر</li>
+        <li>وگرنه LLM با temperature=0 یکی از rag/sql/hybrid را برمی‌گرداند</li>
+        <li>اگر کلید نباشد یا LLM خطا بدهد → <code>RuntimeError</code> و پاسخ HTTP 503 (بدون حدس زدن مسیر)</li>
+      </ul>
+
+      <h3>۴‑۳ — سه نود تخصصی</h3>
+      <table>
+        <thead>
+          <tr><th>نود</th><th>کار</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>rag_node</code></td>
+            <td>فراخوانی <code>run_rag_agent</code> → پاسخ از اسناد</td>
+          </tr>
+          <tr>
+            <td><code>sql_node</code></td>
+            <td>فراخوانی <code>run_sql_agent</code> → SQL و خلاصه</td>
+          </tr>
+          <tr>
+            <td><code>hybrid_node</code></td>
+            <td>اول SQL، بعد استخراج عدد، ساخت عبارت، <code>safe_calculate</code></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>۴‑۴ — <code>build_graph</code> / <code>run_assistant</code></h3>
+      <p>
+        <code>build_graph</code> یک <code>StateGraph</code> می‌سازد: START → router → یکی از سه نود → END.
+        <code>run_assistant</code> تابع عمومی است که گراف را با سوال اجرا می‌کند و
+        <code>AskResponse</code> برمی‌گرداند.
+      </p>
+
+      <div class="diagram">
+        <pre class="mermaid">
+flowchart LR
+  START((START)) --> router
+  router -->|rag| rag_agent
+  router -->|sql| sql_agent
+  router -->|hybrid| hybrid_agent
+  rag_agent --> END((END))
+  sql_agent --> END
+  hybrid_agent --> END
+
+  style router fill:#134e4a,stroke:#2dd4bf,color:#fff
+  style rag_agent fill:#1e3a5f,stroke:#60a5fa,color:#fff
+  style sql_agent fill:#422006,stroke:#fbbf24,color:#fff
+  style hybrid_agent fill:#3b0764,stroke:#c084fc,color:#fff
+        </pre>
+      </div>
+    </section>
+
+    <!-- Step 5 -->
+    <section id="step-5">
+      <h2><span class="path-label">قدم ۵</span> مسیر RAG — از PDF تا پاسخ</h2>
+      <p>
+        ترتیب خواندن داخل این لایه مهم است؛ از آماده‌سازی داده به سمت پاسخ برو:
+      </p>
+
+      <ol class="steps">
+        <li>
+          <strong><code>app/rag/preprocess.py</code></strong> —
+          متن PDF را تمیز می‌کند: حذف هدر/فوتر، اصلاح خط‌تیره‌ها، نرمال‌سازی یونیکد،
+          و <code>chunk_text</code> برای تکه‌تکه کردن سند.
+        </li>
+        <li>
+          <strong><code>app/rag/ingest.py</code></strong> —
+          Embedding محلی (MiniLM)، ساخت یا لود FAISS در <code>data/faiss_index</code>،
+          و <code>ensure_rag_ready</code> که در استارتاپ صدا زده می‌شود.
+        </li>
+        <li>
+          <strong><code>app/rag/retriever.py</code></strong> —
+          <code>retrieve</code> نزدیک‌ترین chunkها را می‌آورد؛ اگر امتیاز پایین باشد
+          <code>insufficient_context=True</code> و جواب ساختگی نمی‌دهد.
+          وگرنه LLM فقط از همان context با citation پاسخ می‌دهد (<code>answer_from_documents</code>).
+        </li>
+        <li>
+          <strong><code>app/agents/rag_agent.py</code></strong> —
+          لایهٔ نازک: فقط <code>answer_from_documents</code> را صدا می‌زند تا coordinator تمیز بماند.
+        </li>
+      </ol>
+
+      <div class="diagram">
+        <pre class="mermaid">
+flowchart LR
+  PDF[PDFها] --> PRE[preprocess]
+  PRE --> EMB[Embedding]
+  EMB --> FAISS[FAISS]
+  Q[سوال] --> RET[retrieve]
+  FAISS --> RET
+  RET --> CHK{امتیاز کافی؟}
+  CHK -->|نه| REF[رد با insufficient_context]
+  CHK -->|بله| LLM[پاسخ grounded + citations]
+
+  style FAISS fill:#1e3a5f,stroke:#60a5fa,color:#fff
+  style LLM fill:#134e4a,stroke:#2dd4bf,color:#fff
+        </pre>
+      </div>
+    </section>
+
+    <!-- Step 6 -->
+    <section id="step-6">
+      <h2><span class="path-label">قدم ۶</span> مسیر SQL — از سوال تا کوئری امن</h2>
+
+      <ol class="steps">
+        <li>
+          <strong><code>app/sql/db.py</code></strong> —
+          اسکیما (<code>products</code>، <code>sales</code>)، دادهٔ نمونه، <code>ensure_database</code>،
+          توضیح اسکیما برای LLM، و <code>get_readonly_connection</code> (اتصال فقط‌خواندنی با authorizer).
+        </li>
+        <li>
+          <strong><code>app/tools/database.py</code></strong> — ابزار <code>query_database(sql)</code> که LLM با
+          tool calling صدا می‌زند. خطا را به‌جای استثنا به‌صورت JSON برمی‌گرداند تا LLM کوئری را اصلاح کند.
+        </li>
+        <li>
+          <strong><code>app/sql/nl2sql.py</code></strong> — اعتبارسنجی و اجرا:
+          <ul class="plain">
+            <li><code>validate_readonly_sql</code> — فقط یک SELECT/WITH؛ DROP/INSERT و … ممنوع (داخل رشته‌ها و کامنت‌ها نادیده گرفته می‌شود)</li>
+            <li><code>run_query</code> — اجرا با سقف تعداد ردیف و timeout؛ هیچ‌وقت استثنا پرتاب نمی‌کند</li>
+          </ul>
+        </li>
+        <li>
+          <strong><code>app/agents/sql_agent.py</code></strong> + <strong><code>tool_agent.py</code></strong> —
+          حلقهٔ tool calling: LLM کوئری می‌نویسد، نتیجه (یا خطا) را می‌بیند، در صورت نیاز اصلاح می‌کند
+          و در پایان پاسخ را می‌سازد (سقف تعداد مرحله).
+        </li>
+      </ol>
+
+      <div class="diagram">
+        <pre class="mermaid">
+flowchart TD
+  Q[سوال] --> LLM["LLM + bind_tools"]
+  LLM -->|tool call| TOOL["query_database"]
+  TOOL --> VAL["validate_readonly_sql"]
+  VAL --> EXE["اتصال فقط‌خواندنی + authorizer"]
+  EXE -->|ok یا error| LLM
+  LLM -->|بدون tool call| OUT[answer + sql + rows]
+
+  style LLM fill:#422006,stroke:#fbbf24,color:#fff
+  style VAL fill:#7f1d1d,stroke:#fb7185,color:#fff
+  style EXE fill:#7f1d1d,stroke:#fb7185,color:#fff
+        </pre>
+      </div>
+
+      <div class="card">
+        <strong>نکتهٔ امنیتی (چند لایه):</strong>
+        اعتبارسنجی SQL فقط لایهٔ اول است. حتی اگر دور زده شود، فایل دیتابیس با <code>mode=ro</code> و
+        <code>PRAGMA query_only</code> باز می‌شود، <code>set_authorizer</code> فقط SELECT و خواندن از
+        <code>products</code>/<code>sales</code> را مجاز می‌کند، و progress handler کوئری طولانی را قطع می‌کند.
+      </div>
+    </section>
+
+    <!-- Step 7 -->
+    <section id="step-7">
+      <h2><span class="path-label">قدم ۷</span> ماشین‌حساب و مسیر Hybrid (Tool Calling)</h2>
+      <p>
+        فایل‌ها: <code>app/tools/calculator.py</code> و <code>app/agents/hybrid_agent.py</code>
+      </p>
+      <ul class="plain">
+        <li><code>safe_calculate</code> — عبارت ریاضی را با AST امن ارزیابی می‌کند (بدون <code>eval</code>)</li>
+        <li><code>calculator_tool</code> — همان تابع به‌شکل ابزار LangChain؛ خطاها به‌صورت JSON به LLM برمی‌گردند</li>
+        <li>توابع کمکی: <code>pct</code>، <code>pct_change</code>، <code>avg</code>، <code>round</code>، <code>min</code>، <code>max</code>، <code>sqrt</code></li>
+      </ul>
+      <p>
+        <code>hybrid_agent</code> هر دو ابزار <code>query_database</code> و <code>calculator</code> را به LLM می‌دهد
+        (<code>bind_tools</code>). خود LLM تصمیم می‌گیرد چند بار SQL بزند و چه چیزی را حساب کند؛
+        دیگر هیچ regex یا ساخت دستی عبارتی در کار نیست.
+      </p>
+      <div class="diagram">
+        <pre class="mermaid">
+flowchart TD
+  Q[سوال ترکیبی] --> LLM["LLM + bind_tools"]
+  LLM -->|tool call| SQL["query_database"]
+  LLM -->|tool call| CALC["calculator"]
+  SQL --> LLM
+  CALC --> LLM
+  LLM -->|پاسخ نهایی| ANS[answer + trace + tool_calls]
+
+  style SQL fill:#422006,stroke:#fbbf24,color:#fff
+  style CALC fill:#3b0764,stroke:#c084fc,color:#fff
+        </pre>
+      </div>
+    </section>
+
+    <!-- Step 8 -->
+    <section id="step-8">
+      <h2><span class="path-label">قدم ۸</span> اسکریپت‌ها، UI و تست‌ها</h2>
+
+      <h3>اسکریپت‌ها (<code>scripts/</code>)</h3>
+      <table>
+        <thead>
+          <tr><th>فایل</th><th>کار</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>init_db.py</code></td>
+            <td>ایجاد و پر کردن SQLite</td>
+          </tr>
+          <tr>
+            <td><code>build_index.py</code></td>
+            <td>اجبار به بازسازی ایندکس FAISS</td>
+          </tr>
+          <tr>
+            <td><code>entrypoint.sh</code></td>
+            <td>بوت Docker: DB → index → uvicorn (PDFها از قبل در data/documents هستند)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>UI — <code>ui/gradio_app.py</code></h3>
+      <p>
+        فقط کلاینت است: فرم سوال می‌گیرد و به <code>POST /ask</code> می‌زند.
+        منطق Agent داخل Gradio نیست.
+      </p>
+
+      <h3>تست‌ها — <code>tests/</code></h3>
+      <p>
+        بخش‌هایی مثل ماشین‌حساب، preprocess، router (با LLM شبیه‌سازی‌شده)، ایمنی SQL (چند لایه) و حلقهٔ tool calling (با LLM شبیه‌سازی‌شده) را بدون نیاز به کلید API پوشش می‌دهند.
+        بعد از فهم منطق، تست‌ها بهترین تأیید فهم هستند.
+      </p>
+
+      <h3>داده — <code>data/</code></h3>
+      <ul class="plain">
+        <li><code>documents/</code> — PDFهای نمونه</li>
+        <li><code>db/adan_retail.db</code> — دیتابیس فروش</li>
+        <li><code>faiss_index/</code> — بردارهای جستجو</li>
+      </ul>
+    </section>
+
+    <!-- Runtime -->
+    <section id="runtime">
+      <h2>جریان اجرا در زمان واقعی</h2>
+      <p>
+        وقتی کاربر می‌پرسد «مشتری چند روز برای بازگشت کالا فرصت دارد؟»:
+      </p>
+      <ol class="steps">
+        <li>درخواست به <code>POST /ask</code> می‌رسد (<code>main.py</code>).</li>
+        <li><code>run_assistant</code> گراف را با سوال اجرا می‌کند.</li>
+        <li>Router تشخیص می‌دهد موضوع سند است → مسیر <span class="badge badge-rag">rag</span>.</li>
+        <li><code>rag_node</code> → retrieve از FAISS → LLM پاسخ grounded می‌دهد.</li>
+        <li><code>AskResponse</code> با answer، sources و trace برمی‌گردد.</li>
+      </ol>
+
+      <p>
+        اگر بپرسد «مجموع درآمد فروش چقدر است و ۱۵ درصدش چند می‌شود؟»:
+      </p>
+      <ol class="steps">
+        <li>Router مسیر <span class="badge badge-hybrid">hybrid</span> را انتخاب می‌کند.</li>
+        <li>Hybrid Agent با tool calling <code>query_database</code> را صدا می‌زند (در صورت خطا کوئری را اصلاح می‌کند).</li>
+        <li>LLM همان عدد را به <code>calculator</code> می‌دهد و ۱۵٪ را حساب می‌کند.</li>
+        <li>پاسخ شامل sql، sql_result، calculator، tool_calls و trace است.</li>
+      </ol>
+
+      <div class="diagram">
+        <pre class="mermaid">
+sequenceDiagram
+  participant U as کاربر
+  participant F as FastAPI
+  participant C as Coordinator
+  participant A as Agent تخصصی
+
+  U->>F: POST /ask
+  F->>C: run_assistant()
+  C->>C: route_node
+  C->>A: rag / sql / hybrid
+  A-->>C: answer + جزئیات
+  C-->>F: AskResponse
+  F-->>U: JSON
+        </pre>
+      </div>
+
+      <div class="card tip">
+        <strong>اگر فقط ۳۰ دقیقه وقت داری:</strong>
+        بخوان به ترتیب
+        <code>schemas.py</code> →
+        <code>main.py</code> →
+        <code>coordinator.py</code>
+        (به‌خصوص <code>route_node</code> و <code>run_assistant</code>).
+        با همین سه فایل ۸۰٪ معماری را می‌فهمی؛ بعد سراغ RAG یا SQL برو.
+      </div>
+    </section>
+
+    <footer>
+      راهنمای یادگیری کد Adan Retail Assistant —
+      فایل: <span class="mono">docs/architecture.html</span> —
+      فونت: وزیرمتن (Vazirmatn)
+    </footer>
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "dark",
+      securityLevel: "loose",
+      flowchart: { curve: "basis", htmlLabels: true },
+      themeVariables: {
+        primaryColor: "#1a222d",
+        primaryTextColor: "#e8eef4",
+        primaryBorderColor: "#2dd4bf",
+        lineColor: "#9aabbc",
+        secondaryColor: "#232d3b",
+        tertiaryColor: "#0f1419",
+        fontFamily: "Vazirmatn, Tahoma, sans-serif"
+      }
+    });
+  </script>
+</body>
+</html>

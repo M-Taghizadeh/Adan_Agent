@@ -1,0 +1,35 @@
+services:
+  assistant:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      # Persist generated index/db across restarts (optional)
+      - ./data/db:/app/data/db
+      - ./data/faiss_index:/app/data/faiss_index
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+      start_period: 120s
+
+  ui:
+    build: .
+    command: python ui/gradio_app.py
+    ports:
+      - "7860:7860"
+    env_file:
+      - .env
+    environment:
+      - ASSISTANT_API_URL=http://assistant:8000
+      - GRADIO_SERVER_NAME=0.0.0.0
+      - GRADIO_SERVER_PORT=7860
+    volumes:
+      - ./ui:/app/ui
+      - ./app:/app/app
+    depends_on:
+      assistant:
+        condition: service_healthy

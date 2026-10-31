@@ -101,10 +101,10 @@ def run_query(sql: str, limit: int | None = None) -> dict[str, Any]:
     except SQLSafetyError as exc:
         return {"ok": False, "sql": candidate, "error": str(exc)}
     out: dict[str, Any] = {
-        "ok": True,
-        "sql": candidate,
-        "row_count": len(rows),
-        "rows": rows,
+        "ok": True,                # اجرا موفق بوده
+        "sql": candidate,          # کوئری‌ای که واقعاً اجرا شد
+        "row_count": len(rows),    # تعداد ردیف‌های برگردانده‌شده
+        "rows": rows,              # خود ردیف‌ها (لیستی از دیکشنری‌ها)
     }
     if truncated:
         out["truncated"] = True
